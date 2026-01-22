@@ -28,12 +28,6 @@ jobs:
       - name: Run tests
         run: uv run pytest tests/ -v
 
-      - name: Run legacy tests
-        run: |
-          pip install pipenv
-          pipenv install --dev
-          pipenv run pytest tests.py -v
-
   lint:
     runs-on: ubuntu-latest
 
