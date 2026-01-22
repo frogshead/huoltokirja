@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://huoltokirja:huoltokirja@db:5432/huoltokirja
+      - UPLOADS_DIR=/app/uploads
+    volumes:
+      - ../app:/app/app:ro
+      - ../alembic:/app/alembic:ro
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      - API_URL=http://app:8000
+    volumes:
+      - ../frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - app
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=huoltokirja
+      - POSTGRES_PASSWORD=huoltokirja
+      - POSTGRES_DB=huoltokirja
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U huoltokirja"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  uploads:
+  frontend_node_modules:

@@ -1,27 +1,71 @@
-name: Python package
+name: Tests
 
-on: [push]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: ["3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pipenv
-        pipenv install --dev # install dev dependencies
-    
-    - name: Test with pytest
-      run: |
-        pipenv run pytest tests.py
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run tests
+        run: uv run pytest tests/ -v
+
+      - name: Run legacy tests
+        run: |
+          pip install pipenv
+          pipenv install --dev
+          pipenv run pytest tests.py -v
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run pylint
+        run: uv run pylint app/ --exit-zero
+
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv and create lock file
+        uses: astral-sh/setup-uv@v4
+
+      - name: Create uv.lock if missing
+        run: uv lock
+
+      - name: Build Docker image
+        run: docker build -f docker/Dockerfile -t huoltokirja:test .
+
+      - name: Test Docker compose
+        run: docker compose -f docker/docker-compose.yml config

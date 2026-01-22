@@ -1,3 +1,14 @@
 {
-    "python.pythonPath": "/Users/mikko/.local/share/virtualenvs/huoltokirja-L-D9HRiz"
+    "python.pythonPath": "/Users/mikko/.local/share/virtualenvs/huoltokirja-L-D9HRiz",
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportShadowedImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "",
+        "/Users/mikko/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/stubs",
+        "/Users/mikko/Library/Application Support/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20260116/adafruit-circuitpython-bundle-py-20260116/lib"
+    ],
+    "circuitpython.board.version": null
 }
